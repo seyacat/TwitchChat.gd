@@ -7,6 +7,8 @@ var connected = false;
 signal new_message(data);
 var temp_id
 var auth
+var auth_connected = false
+var anonimous_connected = false
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
@@ -24,17 +26,17 @@ func _ready():
 
 func _tic(): 
 	if auth:
-		$"../Game/Panel2/VBoxContainer/HBoxContainer6/anonimousConnectionStatus".color = Color.gray
+		anonimous_connected = false
 		if ws.get_connection_status() == WebSocketClient.CONNECTION_CONNECTED:
-			$"../Game/Panel2/VBoxContainer/HBoxContainer7/connectionStatus".color = Color.green
+			auth_connected = true
 		else:
-			$"../Game/Panel2/VBoxContainer/HBoxContainer7/connectionStatus".color = Color.red
+			auth_connected = false
 	else:
-		$"../Game/Panel2/VBoxContainer/HBoxContainer7/connectionStatus".color = Color.gray
+		auth_connected = false
 		if ws.get_connection_status() == WebSocketClient.CONNECTION_CONNECTED:
-			$"../Game/Panel2/VBoxContainer/HBoxContainer6/anonimousConnectionStatus".color = Color.green
+			anonimous_connected = true
 		else:
-			$"../Game/Panel2/VBoxContainer/HBoxContainer6/anonimousConnectionStatus".color = Color.red
+			anonimous_connected = false
 			
 func _authenticate():
 	auth = null
@@ -121,11 +123,11 @@ func _process(delta):
 		
 func _requestCredentials():
 	if(temp_id && !auth):
-		$HTTPRequest.connect("request_completed", self,"_processCredentials")
-		$HTTPRequest.request("https://oauth-dev.seyacat.com/twitch/tempid?temp_id="+temp_id)
+		var httr = _newTemporalHttpRequest()
+		httr.connect("request_completed", self,"_processCredentials")
+		httr.request("https://oauth-dev.seyacat.com/twitch/tempid?temp_id="+temp_id)
 		
 func _processCredentials(result, response_code, headers, body):
-	$HTTPRequest.disconnect("request_completed", self,"_processCredentials")
 	var json = parse_json(body.get_string_from_utf8())
 	if(json):
 		auth = json
@@ -151,6 +153,8 @@ func _save_session():
 	
 func _load_session():
 	var file = File.new()
+	if !file.file_exists("user://session.dat"):
+		return
 	file.open("user://session.dat", File.READ)
 	var content = file.get_as_text()
 	file.close()
