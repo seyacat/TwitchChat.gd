@@ -98,7 +98,7 @@ func _on_data():
 		data["username"] = result.get_string(2)
 		data["cmd"] = result.get_string(4)
 		data["channel"] = result.get_string(5)
-		data["msg"] = result.get_string(6)
+		data["msg"] = result.get_string(6).strip_edges(false,true);
 	
 	if(data.has("cmd") && data.cmd == "PING" ):
 		_send("PONG")
