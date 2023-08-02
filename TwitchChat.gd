@@ -37,7 +37,6 @@ func _tic():
 			anonimous_connected = true
 		else:
 			anonimous_connected = false
-			
 func _authenticate():
 	auth = null
 	temp_id =  str(RandomNumberGenerator.new().randf_range(0,100))+str(RandomNumberGenerator.new().randf_range(0,100));
@@ -68,7 +67,6 @@ func _connected(proto = ""):
 	
 	ws.get_peer(1).set_write_mode(WebSocketPeer.WRITE_MODE_TEXT)
 	ws.get_peer(1).put_packet("CAP REQ :twitch.tv/membership twitch.tv/tags twitch.tv/commands".to_utf8())
-	print(auth)
 	if auth && auth.has("accessToken"):
 		ws.get_peer(1).put_packet(("PASS oauth:" + auth.accessToken).to_utf8())
 		ws.get_peer(1).put_packet(("NICK "+auth.twitchUser.login).to_utf8())
@@ -123,9 +121,9 @@ func _process(delta):
 		
 func _requestCredentials():
 	if(temp_id && !auth):
-		var httr = _newTemporalHttpRequest()
-		httr.connect("request_completed", self,"_processCredentials")
-		httr.request("https://oauth-dev.seyacat.com/twitch/tempid?temp_id="+temp_id)
+		#var httr = _newTemporalHttpRequest()
+		$HTTPRequest.connect("request_completed", self,"_processCredentials")
+		$HTTPRequest.request("https://oauth-dev.seyacat.com/twitch/tempid?temp_id="+temp_id)
 		
 func _processCredentials(result, response_code, headers, body):
 	var json = parse_json(body.get_string_from_utf8())
@@ -208,7 +206,6 @@ func _newTemporalHttpRequest():
 	return httr
 	
 func _delTemporalHttpRequest(result, response_code, headers, body, httr):
-	print(result)
 	httr.queue_free()
 	
 	
